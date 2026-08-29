@@ -1,0 +1,16 @@
+# sbt / scala
+.target/
+target/
+.cache/
+.bsp/
+.project/
+.idea/
+*.class
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
