@@ -13,10 +13,10 @@ object Lambdas {
 
   // --------------------------------------------------
   // TEMA SESIÓN 3: Función ANÓNIMA (Lambda)
-  // Verifica si un libro es "corto" (menos de 200 páginas)
+  // Verifica si un libro es "corto" (menos de 250 páginas)
   // --------------------------------------------------
   val esLibroCorto: ((String, String, String, Int)) => Boolean = 
-    libro => libro._4 < 200
+    libro => libro._4 <= 250
 
   // --------------------------------------------------
   // TEMA SESIÓN 3: Función ANÓNIMA para formatear
