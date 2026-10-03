@@ -75,21 +75,176 @@ object WebServer {
             send(exchange, 200, "application/javascript; charset=utf-8", js)
 
           case "/api/libros" =>
-            val body = jsonLibros(libros).getBytes(StandardCharsets.UTF_8)
-            send(exchange, 200, "application/json; charset=utf-8", body)
+            val body =
+              jsonLibros(libros)
+                .getBytes(StandardCharsets.UTF_8)
+
+            send(
+              exchange,
+              200,
+              "application/json; charset=utf-8",
+              body
+            )
 
           case "/api/buscar" =>
-            val texto = params.getOrElse("q", "")
-            val body = jsonLibros(buscarLibros(texto)).getBytes(StandardCharsets.UTF_8)
-            send(exchange, 200, "application/json; charset=utf-8", body)
+            val texto =
+              params.getOrElse("q", "")
+
+            val body =
+              jsonLibros(buscarLibros(texto))
+                .getBytes(StandardCharsets.UTF_8)
+
+            send(
+              exchange,
+              200,
+              "application/json; charset=utf-8",
+              body
+            )
 
           case "/api/estadisticas" =>
-            val totalLibros = libros.length
-            val promedio = if (libros.isEmpty) 0.0 else libros.map(_.paginas).sum.toDouble / libros.length
-            val categorias = libros.map(_.categoria).distinct.sorted
+            val totalLibros =
+              Datos.biblioteca.length
+
+            val promedio =
+              Funciones.promedioPaginas(
+                Datos.biblioteca)
+
+            val categorias =
+              Datos.biblioteca
+                .map(libro => libro._3)
+                .distinct
+                .sorted
+
+            val libroLargo =
+              Funciones.libroMasLargo(
+                Datos.biblioteca
+              )
+
+            val libroCorto =
+              Funciones.libroMasCorto(
+                Datos.biblioteca
+              )
+
+            val cantidadLibrosCortos =
+              Datos.biblioteca.count(
+                Lambdas.esLibroCorto
+              )
+
+            val distribucionCategorias =
+              Funciones.contarPorCategoria(
+                Datos.biblioteca
+              )
+
+            val tituloMasLargo =
+              libroLargo
+                .map(libro => libro._1)
+                .getOrElse("Sin datos")
+
+            val paginasMasLargo =
+              libroLargo
+                .map(libro => libro._4)
+                .getOrElse(0)
+
+            val tituloMasCorto =
+              libroCorto
+                .map(libro => libro._1)
+                .getOrElse("Sin datos")
+
+            val paginasMasCorto =
+              libroCorto
+                .map(libro => libro._4)
+                .getOrElse(0)
+
+            val distribucionJson =
+              distribucionCategorias
+                .map { case (categoria, cantidad) =>
+                  s"""{"categoria":"$categoria","cantidad":$cantidad}"""
+                }
+                .mkString("[", ",", "]")
+
             val payload =
-              s"{\"totalLibros\":$totalLibros,\"promedioPaginas\":$promedio,\"categorias\":[${categorias.map(c => s"\"$c\"").mkString(",")}]}"
-            send(exchange, 200, "application/json; charset=utf-8", payload.getBytes(StandardCharsets.UTF_8))
+              s"""
+                 |{
+                 |  "totalLibros": $totalLibros,
+                 |  "promedioPaginas": $promedio,
+                 |  "categorias": [${categorias.map(c => s""""$c"""").mkString(",")}],
+                 |  "libroMasLargo": {
+                 |    "titulo": "$tituloMasLargo",
+                 |    "paginas": $paginasMasLargo
+                 |  },
+                 |  "libroMasCorto": {
+                 |    "titulo": "$tituloMasCorto",
+                 |    "paginas": $paginasMasCorto
+                 |  },
+                 |  "cantidadLibrosCortos": $cantidadLibrosCortos,
+                 |  "distribucionCategorias": $distribucionJson
+                 |}
+                 |""".stripMargin
+
+            send(
+              exchange,
+              200,
+              "application/json; charset=utf-8",
+              payload.getBytes(
+                StandardCharsets.UTF_8
+              )
+            )
+
+         
+
+          case "/api/categoria" =>
+            val categoriaSeleccionada = params.getOrElse("cat", "")
+            // Decodificamos caracteres especiales de la URL (por si tiene espacios o tildes)
+            val catDecodificada = java.net.URLDecoder.decode(categoriaSeleccionada, "UTF-8")
+            
+            // ✅ TEMA APLICADO (Sesión 3): Invocamos tu función definida de Funciones.scala
+            val librosFiltradosTuplas = Funciones.filtrarPorCategoria(Datos.biblioteca, catDecodificada)
+            
+            // Mapeamos las tuplas resultantes a la estructura de la clase Libro de tu WebServer
+            val librosFiltrados = librosFiltradosTuplas.map { case (titulo, autor, cat, paginas) =>
+              Libro(titulo, autor, cat, paginas)
+            }
+            
+            val body = jsonLibros(librosFiltrados).getBytes(StandardCharsets.UTF_8)
+            send(exchange, 200, "application/json; charset=utf-8", body)
+
+          case "/api/ordenar" =>
+            val direccion = params.getOrElse("dir", "asc")
+            val ascendente = direccion == "asc"
+
+            val librosOrdenadosTuplas =
+              Funciones.ordenarPorPaginas(Datos.biblioteca, ascendente)
+
+            val librosOrdenados = librosOrdenadosTuplas.map { case (titulo, autor, cat, paginas) =>
+              Libro(titulo, autor, cat, paginas)
+            }
+
+            val body = jsonLibros(librosOrdenados).getBytes(StandardCharsets.UTF_8)
+            send(exchange, 200, "application/json; charset=utf-8", body)
+
+          case "/api/recomendaciones" =>
+            try {
+              val respuestas = PrologService.recomendar(Datos.biblioteca)
+              val recomendaciones = respuestas.flatMap { case (id, motivo) =>
+                Datos.biblioteca.lift(id - 1).map { libro =>
+                  val (titulo, autor, categoria, paginas) = libro
+                  val motivoTexto = motivo match {
+                    case "lectura_breve" => "Lectura breve (250 páginas o menos)"
+                    case "fantasia" => "Aventura de fantasía"
+                    case "clasico" => "Clásico para explorar"
+                  }
+                  s"{\"titulo\":${jsonString(titulo)},\"autor\":${jsonString(autor)}," +
+                    s"\"categoria\":${jsonString(categoria)},\"paginas\":$paginas," +
+                    s"\"motivo\":${jsonString(motivoTexto)}}"
+                }
+              }
+              val body = recomendaciones.mkString("[", ",", "]").getBytes(StandardCharsets.UTF_8)
+              send(exchange, 200, "application/json; charset=utf-8", body)
+            } catch {
+              case error: IllegalStateException =>
+                val body = s"{\"error\":${jsonString(error.getMessage)}}".getBytes(StandardCharsets.UTF_8)
+                send(exchange, 503, "application/json; charset=utf-8", body)
+            }
 
           case _ =>
             val notFound = "404 - Página no encontrada".getBytes(StandardCharsets.UTF_8)
@@ -97,6 +252,19 @@ object WebServer {
         }
       }
     })
+  }
+
+  private def jsonString(value: String): String = {
+    val escaped = value.flatMap {
+      case '"' => "\\\""
+      case '\\' => "\\\\"
+      case '\n' => "\\n"
+      case '\r' => "\\r"
+      case '\t' => "\\t"
+      case char if char < ' ' => f"\\u${char.toInt}%04x"
+      case char => char.toString
+    }
+    s"\"$escaped\""
   }
 
   def main(args: Array[String]): Unit = {

@@ -15,6 +15,7 @@ Proyecto desarrollado en Scala para demostrar conceptos de programación funcion
 
 - Java JDK 17+
 - SBT
+- SWI-Prolog (para las recomendaciones lógicas; debe estar en `PATH`)
 
 ## Ejecutar la aplicación
 
@@ -29,6 +30,8 @@ Luego abrir en el navegador:
 http://localhost:8080
 ```
 
+Si `swipl` no está en `PATH`, configura `SWIPL_PATH` con la ruta completa al ejecutable de SWI-Prolog antes de iniciar SBT.
+
 ## Funcionalidades
 
 - Catálogo de libros
@@ -36,6 +39,13 @@ http://localhost:8080
 - Estadísticas de la colección
 - Diseño responsivo
 - Navegación tipo vista por secciones
+- Recomendaciones basadas en reglas Prolog desde el catálogo
+
+## Integración con Prolog
+
+La interfaz consulta `/api/recomendaciones`. Scala genera hechos `libro/5` a partir de `Datos.biblioteca`, ejecuta las reglas de `src/main/resources/prolog/biblioteca.pl` con SWI-Prolog y transforma cada solución en JSON. Las reglas muestran unificación y resolución; `findall/3` recoge las respuestas y la búsqueda puede devolver más de una solución por libro.
+
+Los comentarios de `biblioteca.pl` y `PrologService.scala` identifican los términos, átomos, constantes, predicados, reglas, listas, control de ejecución e indeterminismo que aparecen en esta integración.
 
 ## Estructura del proyecto
 

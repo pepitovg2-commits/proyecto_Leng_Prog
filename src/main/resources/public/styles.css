@@ -302,6 +302,62 @@ button {
   color: var(--text);
 }
 
+.prolog-recommendations {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  margin: 1.5rem 0;
+  padding: 1.4rem;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.prolog-recommendations h3,
+.prolog-recommendations p {
+  margin-top: 0;
+}
+
+.prolog-recommendations h3 {
+  margin-bottom: 0.4rem;
+}
+
+.prolog-recommendations p:not(.eyebrow) {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.prolog-results {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.prolog-result {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem;
+  background: var(--panel);
+  border-left: 3px solid var(--accent);
+}
+
+.prolog-result span,
+.prolog-result p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.prolog-result p {
+  margin: 0.15rem 0 0;
+}
+
+#prologRecommendButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .search-box button {
   border: 0;
   background: linear-gradient(135deg, var(--primary), #1d7a8c);
@@ -458,5 +514,180 @@ tbody tr:hover {
   .footer-inner {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+/* --- BARRA DE FILTROS POR CATEGORÍA --- */
+.category-filters {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.btn-filter {
+  border: none;
+  background: rgba(22, 78, 99, 0.06);
+  color: var(--primary-dark);
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  transition: 0.2s ease;
+}
+
+.btn-filter:hover {
+  background: rgba(22, 78, 99, 0.12);
+  color: var(--primary-dark);
+}
+
+.btn-filter.active {
+  background: linear-gradient(135deg, var(--primary), #1d7a8c);
+  color: white;
+  box-shadow: 0 4px 12px rgba(22, 78, 99, 0.15);
+}
+/* ==========================================
+   DISTRIBUCIÓN DE LIBROS POR CATEGORÍA
+   ========================================== */
+
+.category-distribution {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.category-distribution .section-head {
+  margin-bottom: 1.5rem;
+}
+
+.category-distribution .section-head h3 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.category-distribution .section-head p:last-child {
+  margin: 0;
+  opacity: 0.75;
+}
+
+.category-distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.category-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 60px;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+.category-info {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.category-name {
+  font-weight: 700;
+}
+
+.category-count {
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
+.category-bar {
+  width: 100%;
+  height: 14px;
+  background: rgba(20, 90, 70, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.category-bar-fill {
+  height: 100%;
+  background: linear-gradient(
+          90deg,
+          #1d8f6e,
+          #48b58c
+  );
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.category-percentage {
+  text-align: right;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 760px) {
+  .category-distribution {
+    padding: 1.2rem;
+  }
+
+  .category-item {
+    grid-template-columns: 1fr 50px;
+  }
+
+  .category-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+/* ==========================================
+   ORDENAR CATÁLOGO POR PÁGINAS
+   ========================================== */
+
+.sort-controls {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.btn-sort {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--primary-dark);
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  transition: 0.2s ease;
+}
+
+.btn-sort:hover {
+  background: rgba(22, 78, 99, 0.08);
+  border-color: rgba(22, 78, 99, 0.2);
+}
+
+.btn-sort.active {
+  background: linear-gradient(135deg, var(--primary), #1d7a8c);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(22, 78, 99, 0.15);
+}
+
+@media (max-width: 760px) {
+  .sort-controls {
+    flex-direction: column;
+  }
+
+  .btn-sort {
+    width: 100%;
+    text-align: center;
   }
 }

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="topbar">
@@ -92,6 +92,23 @@
                 <h2>Buscar libros</h2>
               </div>
             </div>
+            <!-- Filtros rápidos por categoría (Conectados a Funciones.scala) -->
+            <div class="category-filters">
+              <button class="btn-filter active" data-category="Todos">Todos</button>
+              <button class="btn-filter" data-category="Clásico">Clásicos</button>
+              <button class="btn-filter" data-category="Distopía">Distopías</button>
+              <button class="btn-filter" data-category="Realismo Mágico">Realismo Mágico</button>
+              <button class="btn-filter" data-category="Infantil">Infantil</button>
+              <button class="btn-filter" data-category="Fantasía">Fantasía</button>
+              <button class="btn-filter" data-category="Romance">Romance</button>
+              <button class="btn-filter" data-category="Terror">Terror</button>
+            </div>
+
+            <!-- Ordenar por número de páginas (Conectado a Funciones.scala) -->
+            <div class="sort-controls">
+              <button class="btn-sort" data-dir="asc">↑ Menos páginas</button>
+              <button class="btn-sort" data-dir="desc">↓ Más páginas</button>
+            </div>
 
             <form id="searchForm" class="search-box">
               <label class="sr-only" for="searchInput">Buscar libro</label>
@@ -104,6 +121,18 @@
               />
               <button type="submit">Buscar</button>
             </form>
+
+            <section class="prolog-recommendations" aria-labelledby="prologHeading">
+              <div>
+                <p class="eyebrow">Programación lógica</p>
+                <h3 id="prologHeading">Recomendaciones por reglas</h3>
+                <p>SWI-Prolog busca lecturas breves, fantasía y clásicos en el catálogo.</p>
+              </div>
+              <button id="prologRecommendButton" class="btn btn-primary" type="button">
+                Obtener recomendaciones
+              </button>
+              <div id="prologResults" class="prolog-results" aria-live="polite"></div>
+            </section>
 
             <div class="table-wrap">
               <table>
@@ -127,30 +156,75 @@
       </section>
 
       <section class="view" id="estadisticas-view">
-        <section class="stats-section">
-          <div class="container">
-            <div class="section-head">
-              <p class="eyebrow">Estadísticas</p>
-              <h2>Indicadores clave de la biblioteca</h2>
-            </div>
+  <section class="stats-section">
+    <div class="container">
 
-            <div class="stats-grid">
-              <article class="stat-card accent">
-                <span>Total de títulos</span>
-                <strong id="statTotal">0</strong>
-              </article>
-              <article class="stat-card">
-                <span>Promedio de páginas</span>
-                <strong id="statPromedio">0</strong>
-              </article>
-              <article class="stat-card">
-                <span>Categorías activas</span>
-                <strong id="statCategorias">0</strong>
-              </article>
-            </div>
-          </div>
-        </section>
-      </section>
+      <div class="section-head">
+        <p class="eyebrow">Estadísticas</p>
+        <h2>Indicadores clave de la biblioteca</h2>
+      </div>
+
+      <div class="stats-grid">
+
+        <article class="stat-card accent">
+          <span>Total de títulos</span>
+          <strong id="statTotal">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Promedio de páginas</span>
+          <strong id="statPromedio">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Categorías activas</span>
+          <strong id="statCategorias">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Libro con más páginas</span>
+          <strong id="statLibroLargo">-</strong>
+          <p id="statPaginasLargo">0 páginas</p>
+        </article>
+
+        <article class="stat-card">
+          <span>Libro con menos páginas</span>
+          <strong id="statLibroCorto">-</strong>
+          <p id="statPaginasCorto">0 páginas</p>
+        </article>
+
+        <article class="stat-card">
+          <span>Libros cortos</span>
+          <strong id="statLibrosCortos">0</strong>
+          <p>Menos de 200 páginas</p>
+        </article>
+
+      </div>
+
+      <!-- ====================================== -->
+      <!-- DISTRIBUCIÓN DE LIBROS POR CATEGORÍA -->
+      <!-- ====================================== -->
+      <div class="category-distribution">
+
+        <div class="section-head">
+          <p class="eyebrow">Distribución</p>
+          <h3>Libros por categoría</h3>
+          <p>
+            Cantidad de libros registrados en cada categoría de la biblioteca.
+          </p>
+        </div>
+
+        <div
+          id="categoryDistribution"
+          class="category-distribution-list"
+        >
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+</section>
 
       <section class="view" id="contacto-view">
         <section class="catalog">
@@ -191,6 +265,7 @@
       </div>
     </footer>
 
-    <script src="/app.js"></script>
+    <script src="app.js"></script>
+    
   </body>
 </html>
