@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lumen Libris | Biblioteca</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav-wrap">
+        <div class="brand">
+          <div class="brand-mark">L</div>
+          <div>
+            <span class="brand-name">Lumen Libris</span>
+            <small>Biblioteca inteligente</small>
+          </div>
+        </div>
+
+        <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav class="nav-menu" aria-label="Navegación principal">
+          <button class="nav-link active" data-view="inicio">Inicio</button>
+          <button class="nav-link" data-view="catalogo">Catálogo</button>
+          <button class="nav-link" data-view="estadisticas">Estadísticas</button>
+          <button class="nav-link" data-view="contacto">Contacto</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="view active" id="inicio-view">
+        <section class="hero">
+          <div class="container hero-content">
+            <div class="hero-copy">
+              <p class="eyebrow">Plataforma de lectura</p>
+              <h1>Gestiona tu colección de libros con rapidez.</h1>
+              <p class="lead">
+                Lumen Libris centraliza la búsqueda, organización y análisis de tu biblioteca para
+                ofrecer una experiencia moderna, clara y eficiente.
+              </p>
+              <div class="hero-actions">
+                <button class="btn btn-primary nav-link" data-view="catalogo">Explorar catálogo</button>
+                <button class="btn btn-secondary nav-link" data-view="estadisticas">Ver reportes</button>
+              </div>
+            </div>
+
+            <div class="hero-visual">
+              <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=900&q=80" alt="Biblioteca moderna" />
+            </div>
+          </div>
+        </section>
+
+        <section class="stats-section">
+          <div class="container">
+            <div class="section-head">
+              <p class="eyebrow">Resumen</p>
+              <h2>Tu biblioteca en números</h2>
+            </div>
+
+            <div class="stats-grid">
+              <article class="stat-card accent">
+                <span>Total de títulos</span>
+                <strong id="totalLibros">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Promedio de páginas</span>
+                <strong id="promedioPaginas">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Categorías</span>
+                <strong id="totalCategorias">0</strong>
+              </article>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="catalogo-view">
+        <section class="catalog">
+          <div class="container">
+            <div class="section-head search-head">
+              <div>
+                <p class="eyebrow">Catálogo</p>
+                <h2>Buscar libros</h2>
+              </div>
+            </div>
+            <!-- Filtros rápidos por categoría (Conectados a Funciones.scala) -->
+            <div class="category-filters">
+              <button class="btn-filter active" data-category="Todos">Todos</button>
+              <button class="btn-filter" data-category="Clásico">Clásicos</button>
+              <button class="btn-filter" data-category="Distopía">Distopías</button>
+              <button class="btn-filter" data-category="Realismo Mágico">Realismo Mágico</button>
+              <button class="btn-filter" data-category="Infantil">Infantil</button>
+              <button class="btn-filter" data-category="Fantasía">Fantasía</button>
+              <button class="btn-filter" data-category="Romance">Romance</button>
+              <button class="btn-filter" data-category="Terror">Terror</button>
+            </div>
+
+            <!-- Ordenar por número de páginas (Conectado a Funciones.scala) -->
+            <div class="sort-controls">
+              <button class="btn-sort" data-dir="asc">↑ Menos páginas</button>
+              <button class="btn-sort" data-dir="desc">↓ Más páginas</button>
+            </div>
+
+            <form id="searchForm" class="search-box">
+              <label class="sr-only" for="searchInput">Buscar libro</label>
+              <input
+                id="searchInput"
+                name="q"
+                type="search"
+                placeholder="Busca por autor, título o categoría"
+                autocomplete="off"
+              />
+              <button type="submit">Buscar</button>
+            </form>
+
+            <section class="prolog-recommendations" aria-labelledby="prologHeading">
+              <div>
+                <p class="eyebrow">Programación lógica</p>
+                <h3 id="prologHeading">Recomendaciones por reglas</h3>
+                <p>SWI-Prolog busca lecturas breves, fantasía y clásicos en el catálogo.</p>
+              </div>
+              <button id="prologRecommendButton" class="btn btn-primary" type="button">
+                Obtener recomendaciones
+              </button>
+              <div id="prologResults" class="prolog-results" aria-live="polite"></div>
+            </section>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>Categoría</th>
+                    <th>Páginas</th>
+                  </tr>
+                </thead>
+                <tbody id="resultsBody">
+                  <tr>
+                    <td colspan="4" class="empty-state">Cargando libros...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="estadisticas-view">
+  <section class="stats-section">
+    <div class="container">
+
+      <div class="section-head">
+        <p class="eyebrow">Estadísticas</p>
+        <h2>Indicadores clave de la biblioteca</h2>
+      </div>
+
+      <div class="stats-grid">
+
+        <article class="stat-card accent">
+          <span>Total de títulos</span>
+          <strong id="statTotal">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Promedio de páginas</span>
+          <strong id="statPromedio">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Categorías activas</span>
+          <strong id="statCategorias">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Libro con más páginas</span>
+          <strong id="statLibroLargo">-</strong>
+          <p id="statPaginasLargo">0 páginas</p>
+        </article>
+
+        <article class="stat-card">
+          <span>Libro con menos páginas</span>
+          <strong id="statLibroCorto">-</strong>
+          <p id="statPaginasCorto">0 páginas</p>
+        </article>
+
+        <article class="stat-card">
+          <span>Libros cortos</span>
+          <strong id="statLibrosCortos">0</strong>
+          <p>250 páginas o menos</p>
+        </article>
+
+      </div>
+
+      <!-- ====================================== -->
+      <!-- DISTRIBUCIÓN DE LIBROS POR CATEGORÍA -->
+      <!-- ====================================== -->
+      <div class="category-distribution">
+
+        <div class="section-head">
+          <p class="eyebrow">Distribución</p>
+          <h3>Libros por categoría</h3>
+          <p>
+            Cantidad de libros registrados en cada categoría de la biblioteca.
+          </p>
+        </div>
+
+        <div
+          id="categoryDistribution"
+          class="category-distribution-list"
+        >
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+</section>
+
+      <section class="view" id="contacto-view">
+        <section class="catalog">
+          <div class="container">
+            <div class="section-head">
+              <p class="eyebrow">Contacto</p>
+              <h2>Conéctate con Lumen Libris</h2>
+            </div>
+
+            <div class="contact-grid">
+              <div class="contact-card">
+                <h3>Oficina central</h3>
+                <p>Av. Cultura 120, Ciudad del Libro</p>
+                <p>contacto@lumenlibris.com</p>
+                <p>+51 987 654 321</p>
+              </div>
+
+              <div class="contact-card highlight">
+                <h3>Objetivo</h3>
+                <p>
+                  Digitalizar la gestión de bibliotecas para hacer más accesible, ordenada y
+                  útil la experiencia de lectura y catalogación.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div>
+          <strong>Lumen Libris</strong>
+          <p>Soluciones inteligentes para la gestión de lectura y conocimiento.</p>
+        </div>
+        <button class="footer-link nav-link" data-view="inicio">Volver al inicio</button>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+    
+  </body>
+</html>
