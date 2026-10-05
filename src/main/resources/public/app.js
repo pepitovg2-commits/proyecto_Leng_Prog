@@ -471,3 +471,66 @@ relatedForm?.addEventListener('submit', async (event) => {
 });
 
 loadRelatedOptions().catch(() => {});
+
+// Plan de lectura: Scala envía a Prolog plan_lectura(Ids, PaginasPorDia, Total, Dias).
+const planForm = document.getElementById('planForm');
+const planBooks = document.getElementById('planBooks');
+const planPpd = document.getElementById('planPpd');
+const planQuery = document.getElementById('planQuery');
+const planResults = document.getElementById('planResults');
+
+async function loadPlanOptions() {
+  if (!planBooks) return;
+  const libros = await fetchJson('/api/libros');
+  // El id del hecho libro/5 es la posición del libro en el catálogo (desde 1).
+  libros.forEach((libro, index) => {
+    const label = document.createElement('label');
+    label.className = 'plan-book';
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.value = index + 1;
+    const text = document.createElement('span');
+    text.textContent = `${libro.titulo} (${libro.paginas} págs.)`;
+    label.append(check, text);
+    planBooks.append(label);
+  });
+}
+
+planForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const ids = [...planBooks.querySelectorAll('input:checked')].map((c) => c.value);
+  planResults.replaceChildren();
+
+  if (ids.length === 0) {
+    planQuery.textContent = '';
+    planResults.textContent = 'Marca al menos un libro para calcular el plan.';
+    return;
+  }
+
+  const ppd = planPpd.value;
+  planQuery.textContent = `?- plan_lectura([${ids.join(',')}], ${ppd}, Total, Dias).`;
+  planResults.textContent = 'Consultando Prolog...';
+
+  try {
+    const plan = await fetchJson(
+        `/api/plan?ids=${encodeURIComponent(ids.join(','))}&ppd=${encodeURIComponent(ppd)}`
+    );
+    planQuery.textContent = plan.consulta;
+    planResults.replaceChildren();
+
+    const item = document.createElement('article');
+    item.className = 'prolog-result plan-summary';
+    const libros = document.createElement('span');
+    libros.textContent = `📚 ${plan.libros} ${plan.libros === 1 ? 'libro seleccionado' : 'libros seleccionados'}`;
+    const total = document.createElement('strong');
+    total.textContent = `📄 Total: ${plan.totalPaginas} páginas`;
+    const dias = document.createElement('p');
+    dias.textContent = `🗓️ Te tomará ${plan.dias} ${plan.dias === 1 ? 'día' : 'días'} leyendo ${plan.paginasPorDia} páginas por día.`;
+    item.append(libros, total, dias);
+    planResults.append(item);
+  } catch (error) {
+    planResults.textContent = error.message;
+  }
+});
+
+loadPlanOptions().catch(() => {});

@@ -718,3 +718,57 @@ tbody tr:hover {
 .prolog-query:empty {
   display: none;
 }
+
+
+/* ==========================================
+   PLAN DE LECTURA
+   ========================================== */
+
+.plan-form {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 1rem;
+}
+
+.plan-books {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.5rem;
+}
+
+.plan-book {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.plan-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.plan-controls label {
+  font-weight: 600;
+}
+
+.plan-controls input {
+  width: 110px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  color: var(--text);
+}
+
+.plan-summary strong {
+  font-size: 1.2rem;
+  color: var(--text);
+}

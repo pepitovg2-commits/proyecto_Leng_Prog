@@ -28,8 +28,28 @@ object PrologService {
     ejecutar(libros, goal)
   }
 
-  // Carga hechos + reglas en SWI-Prolog, ejecuta el objetivo y lee las líneas id|motivo.
-  private def ejecutar(libros: List[(String, String, String, Int)], goal: String): List[(Int, String)] = {
+  // Plan de lectura: consulta plan_lectura(Ids, PaginasPorDia, Total, Dias).
+  // Los ids deben venir ya validados como enteros (el servidor lo hace).
+  // Devuelve Some((totalPaginas, dias)) o None si Prolog no dio respuesta.
+  def planLectura(libros: List[(String, String, String, Int)], ids: List[Int], paginasPorDia: Int): Option[(Int, Int)] = {
+    val goal =
+      s"plan_lectura(${ids.mkString("[", ",", "]")}, $paginasPorDia, Total, Dias), " +
+        "format('~d|~d~n', [Total, Dias])"
+    val planPattern = """(\d+)\|(\d+)""".r
+    ejecutarSalida(libros, goal).linesIterator.collectFirst {
+      case planPattern(total, dias) => (total.toInt, dias.toInt)
+    }
+  }
+
+  // Interpreta la salida como líneas id|motivo.
+  private def ejecutar(libros: List[(String, String, String, Int)], goal: String): List[(Int, String)] =
+    ejecutarSalida(libros, goal).linesIterator.flatMap {
+      case answerPattern(rawId, motivo) => rawId.toIntOption.map(_ -> motivo)
+      case _ => None
+    }.toList
+
+  // Carga hechos + reglas en SWI-Prolog, ejecuta el objetivo y devuelve su salida en texto.
+  private def ejecutarSalida(libros: List[(String, String, String, Int)], goal: String): String = {
     val rulesFile = copyRules()
     val factsFile = Files.createTempFile("lumen-libros-", ".pl")
 
@@ -62,11 +82,7 @@ object PrologService {
         )
       }
 
-      // Cada solución se imprime como id|motivo; el id permite recuperar el libro original.
-      output.linesIterator.flatMap {
-        case answerPattern(rawId, motivo) => rawId.toIntOption.map(_ -> motivo)
-        case _ => None
-      }.toList
+      output
     } catch {
       case error: IOException if error.getMessage != null && error.getMessage.contains("CreateProcess") =>
         throw new IllegalStateException(

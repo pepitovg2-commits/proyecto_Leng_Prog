@@ -190,21 +190,21 @@ object WebServer {
               )
             )
 
-         
+
 
           case "/api/categoria" =>
             val categoriaSeleccionada = params.getOrElse("cat", "")
             // Decodificamos caracteres especiales de la URL (por si tiene espacios o tildes)
             val catDecodificada = java.net.URLDecoder.decode(categoriaSeleccionada, "UTF-8")
-            
+
             // ✅ TEMA APLICADO (Sesión 3): Invocamos tu función definida de Funciones.scala
             val librosFiltradosTuplas = Funciones.filtrarPorCategoria(Datos.biblioteca, catDecodificada)
-            
+
             // Mapeamos las tuplas resultantes a la estructura de la clase Libro de tu WebServer
             val librosFiltrados = librosFiltradosTuplas.map { case (titulo, autor, cat, paginas) =>
               Libro(titulo, autor, cat, paginas)
             }
-            
+
             val body = jsonLibros(librosFiltrados).getBytes(StandardCharsets.UTF_8)
             send(exchange, 200, "application/json; charset=utf-8", body)
 
@@ -270,6 +270,32 @@ object WebServer {
                 }
                 val body = items.mkString("[", ",", "]").getBytes(StandardCharsets.UTF_8)
                 send(exchange, 200, "application/json; charset=utf-8", body)
+              }
+            } catch {
+              case error: IllegalStateException =>
+                val body = s"{\"error\":${jsonString(error.getMessage)}}".getBytes(StandardCharsets.UTF_8)
+                send(exchange, 503, "application/json; charset=utf-8", body)
+            }
+
+          case "/api/plan" =>
+            try {
+              val ids = params.getOrElse("ids", "").split(",").toList
+                .flatMap(_.trim.toIntOption).distinct
+              val ppd = params.get("ppd").flatMap(_.toIntOption).getOrElse(0)
+              if (ids.isEmpty || ids.exists(id => id < 1 || id > Datos.biblioteca.length) || ppd < 1 || ppd > 10000) {
+                val body = "{\"error\":\"Selecciona al menos un libro e indica páginas por día (1 a 10000)\"}".getBytes(StandardCharsets.UTF_8)
+                send(exchange, 400, "application/json; charset=utf-8", body)
+              } else {
+                PrologService.planLectura(Datos.biblioteca, ids, ppd) match {
+                  case Some((total, dias)) =>
+                    val consulta = s"?- plan_lectura(${ids.mkString("[", ",", "]")}, $ppd, Total, Dias)."
+                    val body = s"{\"libros\":${ids.length},\"totalPaginas\":$total,\"dias\":$dias,\"paginasPorDia\":$ppd," +
+                      s"\"consulta\":${jsonString(consulta)}}"
+                    send(exchange, 200, "application/json; charset=utf-8", body.getBytes(StandardCharsets.UTF_8))
+                  case None =>
+                    val body = "{\"error\":\"Prolog no devolvió un plan\"}".getBytes(StandardCharsets.UTF_8)
+                    send(exchange, 503, "application/json; charset=utf-8", body)
+                }
               }
             } catch {
               case error: IllegalStateException =>

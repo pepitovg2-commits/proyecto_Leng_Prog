@@ -57,3 +57,11 @@ misma_categoria(A, B) :-
 % busca por backtracking todos los X y Motivo que satisfacen alguna clausula.
 relacionado(A, B, mismo_autor)     :- mismo_autor(A, B).
 relacionado(A, B, misma_categoria) :- misma_categoria(A, B).
+
+% ---------------------------------------------------------------------------
+% Plan de lectura: reutiliza total_paginas/2 (recursion sobre listas) y agrega
+% aritmetica. Dias = paginas totales / paginas por dia, redondeado hacia arriba.
+% Ejemplo: ?- plan_lectura([3,4,6], 30, Total, Dias).  =>  Total = 673, Dias = 23
+plan_lectura(Ids, PaginasPorDia, Total, Dias) :-
+    total_paginas(Ids, Total),
+    Dias is ceiling(Total / PaginasPorDia).
