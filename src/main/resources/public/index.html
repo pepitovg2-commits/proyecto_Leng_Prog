@@ -134,6 +134,21 @@
               <div id="prologResults" class="prolog-results" aria-live="polite"></div>
             </section>
 
+            <section class="prolog-recommendations prolog-related" aria-labelledby="relatedHeading">
+              <div>
+                <p class="eyebrow">Programación lógica</p>
+                <h3 id="relatedHeading">Libros relacionados</h3>
+                <p>Prolog infiere qué libros comparten autor o categoría con el que elijas.</p>
+              </div>
+              <form id="relatedForm" class="related-form">
+                <label class="sr-only" for="relatedSelect">Elige un libro</label>
+                <select id="relatedSelect"></select>
+                <button class="btn btn-primary" type="submit">Buscar relacionados</button>
+              </form>
+              <code id="relatedQuery" class="prolog-query"></code>
+              <div id="relatedResults" class="prolog-results" aria-live="polite"></div>
+            </section>
+
             <div class="table-wrap">
               <table>
                 <thead>

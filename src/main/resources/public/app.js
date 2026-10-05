@@ -418,3 +418,56 @@ prologButton?.addEventListener('click', async () => {
     prologButton.disabled = false;
   }
 });
+
+// Libros relacionados: Scala envía a Prolog la consulta relacionado(Id, X, Motivo).
+const relatedForm = document.getElementById('relatedForm');
+const relatedSelect = document.getElementById('relatedSelect');
+const relatedQuery = document.getElementById('relatedQuery');
+const relatedResults = document.getElementById('relatedResults');
+
+async function loadRelatedOptions() {
+  if (!relatedSelect) return;
+  const libros = await fetchJson('/api/libros');
+  // El id del hecho libro/5 es la posición del libro en el catálogo (desde 1).
+  libros.forEach((libro, index) => {
+    const option = document.createElement('option');
+    option.value = index + 1;
+    option.textContent = `${libro.titulo} — ${libro.autor}`;
+    relatedSelect.append(option);
+  });
+}
+
+relatedForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const id = relatedSelect.value;
+  relatedQuery.textContent = `?- relacionado(${id}, X, Motivo).`;
+  relatedResults.replaceChildren();
+  relatedResults.textContent = 'Consultando Prolog...';
+
+  try {
+    const relacionados = await fetchJson(`/api/relacionados?id=${encodeURIComponent(id)}`);
+    relatedResults.replaceChildren();
+
+    if (relacionados.length === 0) {
+      relatedResults.textContent = 'false. Prolog no encontró libros relacionados.';
+      return;
+    }
+
+    relacionados.forEach((libro) => {
+      const item = document.createElement('article');
+      item.className = 'prolog-result';
+      const title = document.createElement('strong');
+      title.textContent = libro.titulo;
+      const details = document.createElement('span');
+      details.textContent = `${libro.autor} · ${libro.categoria} · ${libro.paginas} págs.`;
+      const reason = document.createElement('p');
+      reason.textContent = libro.motivos.join(' + ');
+      item.append(title, details, reason);
+      relatedResults.append(item);
+    });
+  } catch (error) {
+    relatedResults.textContent = error.message;
+  }
+});
+
+loadRelatedOptions().catch(() => {});

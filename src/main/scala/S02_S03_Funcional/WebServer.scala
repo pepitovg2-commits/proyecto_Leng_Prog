@@ -246,6 +246,37 @@ object WebServer {
                 send(exchange, 503, "application/json; charset=utf-8", body)
             }
 
+          case "/api/relacionados" =>
+            try {
+              val id = params.get("id").flatMap(_.toIntOption).getOrElse(0)
+              if (id < 1 || id > Datos.biblioteca.length) {
+                val body = "{\"error\":\"Libro no válido\"}".getBytes(StandardCharsets.UTF_8)
+                send(exchange, 400, "application/json; charset=utf-8", body)
+              } else {
+                val respuestas = PrologService.relacionados(Datos.biblioteca, id)
+                // Un libro puede cumplir varias reglas: se agrupan sus motivos.
+                val orden = respuestas.map(_._1).distinct
+                val items = orden.flatMap { otro =>
+                  Datos.biblioteca.lift(otro - 1).map { case (titulo, autor, categoria, paginas) =>
+                    val motivos = respuestas.collect { case (`otro`, m) => m }.map {
+                      case "mismo_autor" => "Mismo autor"
+                      case "misma_categoria" => "Misma categoría"
+                      case otroMotivo => otroMotivo
+                    }
+                    s"{\"titulo\":${jsonString(titulo)},\"autor\":${jsonString(autor)}," +
+                      s"\"categoria\":${jsonString(categoria)},\"paginas\":$paginas," +
+                      s"\"motivos\":${motivos.map(jsonString).mkString("[", ",", "]")}}"
+                  }
+                }
+                val body = items.mkString("[", ",", "]").getBytes(StandardCharsets.UTF_8)
+                send(exchange, 200, "application/json; charset=utf-8", body)
+              }
+            } catch {
+              case error: IllegalStateException =>
+                val body = s"{\"error\":${jsonString(error.getMessage)}}".getBytes(StandardCharsets.UTF_8)
+                send(exchange, 503, "application/json; charset=utf-8", body)
+            }
+
           case _ =>
             val notFound = "404 - Página no encontrada".getBytes(StandardCharsets.UTF_8)
             send(exchange, 404, "text/plain; charset=utf-8", notFound)

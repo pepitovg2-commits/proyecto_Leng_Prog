@@ -13,6 +13,23 @@ object PrologService {
   // hechos libro/5 actuales, se ejecutan las reglas y se extraen sus respuestas.
   // Así los hechos no se duplican: Datos.biblioteca sigue siendo la fuente única.
   def recomendar(libros: List[(String, String, String, Int)]): List[(Int, String)] = {
+    val goal =
+      "findall(Id-Motivo, recomendacion(Id, Motivo), Respuestas), " +
+        "forall(member(Id-Motivo, Respuestas), format('~d|~w~n', [Id, Motivo]))"
+    ejecutar(libros, goal)
+  }
+
+  // Consulta relacionado(Id, X, Motivo): devuelve cada libro X relacionado con Id
+  // junto con el motivo (mismo_autor o misma_categoria) que Prolog dedujo.
+  def relacionados(libros: List[(String, String, String, Int)], id: Int): List[(Int, String)] = {
+    val goal =
+      s"findall(X-Motivo, relacionado($id, X, Motivo), Respuestas), " +
+        "forall(member(X-Motivo, Respuestas), format('~d|~w~n', [X, Motivo]))"
+    ejecutar(libros, goal)
+  }
+
+  // Carga hechos + reglas en SWI-Prolog, ejecuta el objetivo y lee las líneas id|motivo.
+  private def ejecutar(libros: List[(String, String, String, Int)], goal: String): List[(Int, String)] = {
     val rulesFile = copyRules()
     val factsFile = Files.createTempFile("lumen-libros-", ".pl")
 
@@ -20,15 +37,14 @@ object PrologService {
       val facts = libros.zipWithIndex.map { case ((titulo, autor, categoria, paginas), index) =>
         s"libro(${index + 1}, ${atom(titulo)}, ${atom(autor)}, ${atom(categoria)}, $paginas)."
       }.mkString("\n")
-      Files.writeString(factsFile, facts, StandardCharsets.UTF_8)
+      // Reglas y hechos van en un solo archivo: así no depende de que la versión de
+      // SWI-Prolog acepte varias opciones -s.
+      val rules = Files.readString(rulesFile, StandardCharsets.UTF_8)
+      Files.writeString(factsFile, ":- encoding(utf8).\n" + rules + "\n" + facts + "\n", StandardCharsets.UTF_8)
 
-      val goal =
-        "findall(Id-Motivo, recomendacion(Id, Motivo), Respuestas), " +
-          "forall(member(Id-Motivo, Respuestas), format('~d|~w~n', [Id, Motivo]))"
       val process = new ProcessBuilder(
         executable,
         "-q",
-        "-s", rulesFile.toString,
         "-s", factsFile.toString,
         "-g", goal,
         "-t", "halt"

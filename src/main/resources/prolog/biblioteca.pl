@@ -37,3 +37,23 @@ total_paginas([Id|Resto], Total) :-
     libro(Id, _, _, _, Paginas),
     total_paginas(Resto, TotalResto),
     Total is Paginas + TotalResto.
+
+% ---------------------------------------------------------------------------
+% Libros relacionados (analogo a hermano/2 y tio/2 del caso de la familia).
+% Dos libros distintos estan relacionados si comparten autor o categoria.
+% A \= B evita que un libro se relacione consigo mismo, igual que X \= Y en hermano/2.
+mismo_autor(A, B) :-
+    libro(A, _, Autor, _, _),
+    libro(B, _, Autor, _, _),
+    A \= B.
+
+misma_categoria(A, B) :-
+    libro(A, _, _, Categoria, _),
+    libro(B, _, _, Categoria, _),
+    A \= B.
+
+% relacionado(A, B, Motivo): regla que se apoya en otras dos reglas (inferencia en
+% cadena). Con la consulta relacionado(3, X, Motivo), Prolog unifica A con 3 y
+% busca por backtracking todos los X y Motivo que satisfacen alguna clausula.
+relacionado(A, B, mismo_autor)     :- mismo_autor(A, B).
+relacionado(A, B, misma_categoria) :- misma_categoria(A, B).

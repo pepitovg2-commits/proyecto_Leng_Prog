@@ -691,3 +691,30 @@ tbody tr:hover {
     text-align: center;
   }
 }
+
+.related-form {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.related-form select {
+  min-width: 220px;
+  max-width: 100%;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  color: var(--text);
+}
+
+.prolog-query {
+  grid-column: 1 / -1;
+  font-family: Consolas, monospace;
+  color: var(--muted);
+}
+
+.prolog-query:empty {
+  display: none;
+}
